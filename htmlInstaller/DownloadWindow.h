@@ -10,11 +10,11 @@ class DownloadWindow : public HtmlWindow, public IDownloadCallback
 	int m_total_progress;
 	bool download_started;
 	bool download_cancelled;
-	htmlayout::dom::element status;
-	htmlayout::dom::element error;
-	htmlayout::dom::element progress;
-	htmlayout::dom::element button_cancel;
-	htmlayout::dom::element button_start;
+	sciter::dom::element status;
+	sciter::dom::element error;
+	sciter::dom::element progress;
+	sciter::dom::element button_cancel;
+	sciter::dom::element button_start;
 	// ThreadComponent
 	int ExecOnThread();
 	// IDownloadCallback
@@ -39,7 +39,7 @@ protected:
 	void Start();
 public:
 	void Create(int x, int y, int width, int height, const wchar_t * caption = 0);
-	BOOL on_event(HELEMENT he, HELEMENT target, BEHAVIOR_EVENTS type, UINT_PTR reason);
+	bool on_event(HELEMENT he, HELEMENT target, BEHAVIOR_EVENTS type, UINT_PTR reason);
 	int OnMessage(UINT message, WPARAM wParam, LPARAM lParam);
 public:
 	void ShowError(const std::wstring&);

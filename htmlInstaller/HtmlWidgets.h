@@ -2,173 +2,145 @@
 
 #include "HtmlWindow.h"
 
-// a widget task
-struct widget_task : public htmlayout::gui_task
+// HTML DOM helper methods
+struct Html
 {
-	htmlayout::dom::element * m_p;
-
-	widget_task(htmlayout::dom::element * p)
-		: m_p(p)
+	static void Hide(const sciter::dom::element* element)
 	{
-		
+		performActionIfValid(element, [](const sciter::dom::element* element)
+		{
+			element->set_style_attribute("display", L"none");
+		});
 	}
 
-	virtual void exec_valid() = 0;
-
-	virtual void exec()
+	static void Show(const sciter::dom::element* element)
 	{
-		if (m_p->is_valid())
+		performActionIfValid(element, [](const sciter::dom::element* element)
 		{
-			exec_valid();
+			element->set_style_attribute("display", NULL);
+		});
+	}
+
+	static void SetText(sciter::dom::element* element, const WCHAR* t)
+	{
+		performActionIfValid(element, t, [](sciter::dom::element* element, const WCHAR* t)
+		{
+			element->set_text(t);
+		});
+	}
+
+	static void SetText(sciter::dom::element* element, const std::wstring& t)
+	{
+		SetText(element, t.c_str());
+	}
+
+	static void SetText(sciter::dom::element* element, const std::wstring* t)
+	{
+		SetText(element, t->c_str());
+	}
+
+	static void SetAttribute(sciter::dom::element* element, const char* name, const WCHAR* value)
+	{
+		performActionIfValid(element, name, value, [](sciter::dom::element* element, const char* name, const WCHAR* value)
+		{
+			element->set_attribute(name, value);
+		});
+	}
+
+	static void SetAttribute(sciter::dom::element* element, const char* name, const std::wstring value)
+	{
+		SetAttribute(element, name, value.c_str());
+	}
+
+	static void Insert(sciter::dom::element* element, const sciter::dom::element& e, unsigned int index)
+	{
+		performActionIfValid(element, e, index, [](sciter::dom::element* element, const sciter::dom::element& e, unsigned int index)
+		{
+			element->insert(e, index);
+		});
+	}
+
+	static void Clear(sciter::dom::element* element)
+	{
+		performActionIfValid(element, [](sciter::dom::element* element)
+		{
+			element->clear();
+		});
+	}
+
+	static void Disable(sciter::dom::element* element)
+	{
+		performActionIfValid(element, [](sciter::dom::element* element)
+		{
+			element->set_attribute("disabled", L"disabled");
+		});
+	}
+
+	static void Enable(sciter::dom::element* element)
+	{
+		performActionIfValid(element, [](sciter::dom::element* element)
+		{
+			element->remove_attribute("disabled");
+		});
+	}
+
+private:
+	static void performActionIfValid(const sciter::dom::element* element, std::function<void(const sciter::dom::element* element)> action)
+	{
+		if (element != nullptr && element->is_valid())
+		{
+			action(element);
+		}
+	}
+
+	static void performActionIfValid(sciter::dom::element* element, std::function<void(sciter::dom::element* element)> action)
+	{
+		if (element != nullptr && element->is_valid())
+		{
+			action(element);
+		}
+	}
+
+	static void performActionIfValid(const sciter::dom::element* element, const WCHAR* t, std::function<void(const sciter::dom::element* element, const WCHAR* t)> action)
+	{
+		if (element != nullptr && element->is_valid())
+		{
+			action(element, t);
+		}
+	}
+
+	static void performActionIfValid(sciter::dom::element* element, const WCHAR* t, std::function<void(sciter::dom::element* element, const WCHAR* t)> action)
+	{
+		if (element != nullptr && element->is_valid())
+		{
+			action(element, t);
+		}
+	}
+
+	static void performActionIfValid(sciter::dom::element* element, const char* name, const WCHAR* value, std::function<void(sciter::dom::element* element, const char* name, const WCHAR* value)> action)
+	{
+		if (element != nullptr && element->is_valid())
+		{
+			action(element, name, value);
+		}
+	}
+
+	static void performActionIfValid(sciter::dom::element* element, const sciter::dom::element& e, unsigned int index, std::function<void(sciter::dom::element* element, const sciter::dom::element& e, unsigned int index)> action)
+	{
+		if (element != nullptr && element->is_valid())
+		{
+			action(element, e, index);
 		}
 	}
 };
 
-// remove an attribute from a widget
-struct html_remove_attribute_task : public widget_task
-{
-	std::string m_attribute;
-
-	html_remove_attribute_task(htmlayout::dom::element * p, const std::string& attribute)
-		: widget_task(p)
-		, m_attribute(attribute)
-	{
-		
-	}
-
-	virtual void exec_valid()
-	{
-		m_p->remove_attribute(m_attribute.c_str());
-	}
-};
-
-// set style attribute
-struct html_set_style_attribute_task : public widget_task
-{
-	std::string m_attribute_name;
-	std::wstring m_attribute_value;
-
-	html_set_style_attribute_task(htmlayout::dom::element * p, 
-		const std::string& attribute_name, const std::wstring& attribute_value)
-		: widget_task(p)
-		, m_attribute_name(attribute_name)
-		, m_attribute_value(attribute_value)
-	{
-		
-	}
-
-	virtual void exec_valid()
-	{
-		m_p->set_style_attribute(m_attribute_name.c_str(), m_attribute_value.c_str());
-	}
-};
-
-// clear style attribute
-struct html_clear_style_attribute_task : public widget_task
-{
-	std::string m_attribute_name;
-
-	html_clear_style_attribute_task(htmlayout::dom::element * p, 
-		const std::string& attribute_name)
-		: widget_task(p)
-		, m_attribute_name(attribute_name)
-	{
-		
-	}
-
-	virtual void exec_valid()
-	{
-		m_p->clear_style_attribute(m_attribute_name.c_str());
-	}
-};
-
-struct html_set_text_task : public widget_task
-{
-	std::wstring m_text;
-
-	html_set_text_task(htmlayout::dom::element * p, 
-		const std::wstring& text)
-		: widget_task(p)
-		, m_text(text)
-	{
-		
-	}
-
-	virtual void exec_valid()
-	{
-		m_p->set_text(m_text.c_str());
-	}
-};
-
-struct html_set_attribute_task : public widget_task
-{
-	std::string m_attribute_name;
-	std::wstring m_attribute_value;
-
-	html_set_attribute_task(htmlayout::dom::element * p, 
-		const std::string& attribute_name, const std::wstring& attribute_value)
-		: widget_task(p)
-		, m_attribute_name(attribute_name)
-		, m_attribute_value(attribute_value)
-	{
-		
-	}
-
-	virtual void exec_valid()
-	{
-		m_p->set_attribute(m_attribute_name.c_str(), m_attribute_value.c_str());
-	}
-};
-
-struct html_insert_task : public widget_task
-{
-	htmlayout::dom::element m_widget;
-	unsigned int m_index;
-	static const unsigned int last = 0xFFFF;
-
-	html_insert_task(htmlayout::dom::element * p, 
-		htmlayout::dom::element widget, unsigned int index)
-		: widget_task(p)
-		, m_widget(widget)
-		, m_index(index)
-	{
-		
-	}
-
-	virtual void exec_valid()
-	{
-		int index = m_index;
-		
-		if (m_index == last)
-		{
-			index = m_p->children_count();
-		}
-
-		m_p->insert(m_widget, index);
-	}
-};
-
-
-struct html_clear_task : public widget_task
-{
-	html_clear_task(htmlayout::dom::element * p)
-		: widget_task(p)
-	{
-		
-	}
-
-	virtual void exec_valid()
-	{
-		m_p->clear();
-	}
-};
 // auto pointers
 
 struct html_disabled
 {
-    static void close(htmlayout::dom::element * p)
+    static void close(sciter::dom::element * p)
     {
-		htmlayout::queue::push(new html_remove_attribute_task(p, "disabled"), HtmlWindow::s_hwnd);
+		Html::Enable(p);
     }
 };
 
@@ -176,9 +148,9 @@ struct html_save_progress
 {
 	int m_value;
 	int m_maxvalue;
-	htmlayout::dom::element * m_p;
+	sciter::dom::element * m_p;
 
-	html_save_progress(htmlayout::dom::element * p, int value, int maxvalue)
+	html_save_progress(sciter::dom::element * p, int value, int maxvalue)
 		: m_p(p)
 		, m_value(value)
 		, m_maxvalue(maxvalue)
@@ -188,7 +160,7 @@ struct html_save_progress
 
     virtual ~html_save_progress()
     {	
-		htmlayout::queue::push(new html_set_attribute_task(m_p, "maxvalue", DVLib::towstring(m_maxvalue).c_str()), HtmlWindow::s_hwnd);
-		htmlayout::queue::push(new html_set_attribute_task(m_p, "value", DVLib::towstring(m_value).c_str()), HtmlWindow::s_hwnd);
+		Html::SetAttribute(m_p, "maxvalue", DVLib::towstring(m_maxvalue));
+		Html::SetAttribute(m_p, "value", DVLib::towstring(m_value));
     }
 };

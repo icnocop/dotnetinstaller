@@ -9,14 +9,14 @@ private:
 	bool m_download_started;
 	bool m_download_cancelled;
 	DownloadDialogPtr m_downloaddialog;
-	htmlayout::dom::element components;
-	htmlayout::dom::element button_install;
-	htmlayout::dom::element button_uninstall;
-	htmlayout::dom::element button_skip;
-	htmlayout::dom::element button_cancel;
-	htmlayout::dom::element status;
-	htmlayout::dom::element error;
-	htmlayout::dom::element progress;
+	sciter::dom::element components;
+	sciter::dom::element button_install;
+	sciter::dom::element button_uninstall;
+	sciter::dom::element button_skip;
+	sciter::dom::element button_cancel;
+	sciter::dom::element status;
+	sciter::dom::element error;
+	sciter::dom::element progress;
 	void SetControlValues();
 	void ExtractCab(const std::wstring& id, bool display_dialog);
 	// IExecuteCallback
@@ -62,10 +62,10 @@ public:
 	bool RunDownloadConfiguration(const DownloadDialogPtr& p_Configuration);
 	void Create(int x, int y, int width, int height, const wchar_t * caption = 0);
 	void ResetContent();
-	BOOL on_event(HELEMENT he, HELEMENT target, BEHAVIOR_EVENTS type, UINT_PTR reason);
-	BOOL on_mouse(HELEMENT he, HELEMENT target, UINT event_type, POINT pt, UINT mouseButtons, UINT keyboardStates);
-	BOOL on_mouse_click(HELEMENT he, HELEMENT target, POINT pt, UINT mouseButtons, UINT keyboardStates);
-	BOOL on_mouse_dclick(HELEMENT he, HELEMENT target, POINT pt, UINT mouseButtons, UINT keyboardStates);
+	bool on_event(HELEMENT he, HELEMENT target, BEHAVIOR_EVENTS type, UINT_PTR reason);
+	bool on_mouse(HELEMENT he, HELEMENT target, UINT event_type, POINT pt, UINT mouseButtons, UINT keyboardStates);
+	bool on_mouse_click(HELEMENT he, HELEMENT target, POINT pt, UINT mouseButtons, UINT keyboardStates);
+	bool on_mouse_dclick(HELEMENT he, HELEMENT target, POINT pt, UINT mouseButtons, UINT keyboardStates);
 	int OnMessage(UINT message, WPARAM wParam, LPARAM lParam);
 public:
 	void OnInstall();

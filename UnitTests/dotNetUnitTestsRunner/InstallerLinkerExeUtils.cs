@@ -93,12 +93,12 @@ namespace dotNetUnitTestsRunner
             p.StartInfo.WorkingDirectory = Path.GetDirectoryName(filename);
             p.StartInfo.FileName = filename;
             p.StartInfo.Arguments = args;
-            p.StartInfo.WindowStyle = ProcessWindowStyle.Normal;
+            p.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
             p.Start();
             return p;
         }
 
-        public static void CreateInstaller(InstallerLinkerArguments args)
+        public static int CreateInstaller(InstallerLinkerArguments args)
         {
             List<String> cmd = new List<string>();
             cmd.Add(string.Format("/Configuration:\"{0}\"", args.config));
@@ -125,7 +125,7 @@ namespace dotNetUnitTestsRunner
                 foreach (string folder in args.htmlFiles)
                     cmd.Add(string.Format("/EmbedHtml:\"{0}\"", folder));
             }
-            Run(InstallerLinkerExeUtils.Executable, string.Join(" ", cmd.ToArray()));
+            return Run(InstallerLinkerExeUtils.Executable, string.Join(" ", cmd.ToArray()));
         }
     }
 }

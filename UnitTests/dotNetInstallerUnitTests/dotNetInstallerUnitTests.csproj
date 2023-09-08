@@ -89,6 +89,7 @@
     <Compile Include="UILevelUnitTests.cs" />
     <Compile Include="UIUnitTests.cs" />
     <Compile Include="UninstallUnitTests.cs" />
+    <Compile Include="UnitTestsBase.cs" />
     <Compile Include="UserControlUnitTests.cs" />
   </ItemGroup>
   <ItemGroup>

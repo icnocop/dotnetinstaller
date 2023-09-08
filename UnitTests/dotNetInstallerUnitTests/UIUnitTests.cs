@@ -23,7 +23,7 @@ namespace dotNetInstallerUnitTests
     /// UI unit tests
     /// </summary>
     [TestFixture]
-    public class UIUnitTests
+    public class UIUnitTests : UnitTestsBase
     {
         /// <summary>
         /// Asserts that hiding a component if it's already installed during the install sequence hides the component.
@@ -75,7 +75,7 @@ namespace dotNetInstallerUnitTests
 
                     // assert that there's only one checkbox
                     Assert.AreEqual(1, checkBoxes.Length);
-                    Assert.AreEqual("command1 ", checkBoxes[0].Name);
+                    Assert.AreEqual("command1", checkBoxes[0].Name);
                 }
                 else
                 {

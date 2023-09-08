@@ -2,7 +2,7 @@
 #include "htmlInstaller.h"
 #include "HtmlWindow.h"
 #include "ConfigFileManager.h"
-#include "HtmlayoutDll.h"
+#include "SciterDll.h"
 #include "ExtractCabProcessor.h"
 #include <Version/Version.h>
 
@@ -10,10 +10,56 @@ BEGIN_MESSAGE_MAP(CHtmlInstallerApp, CWinApp)
     ON_COMMAND(ID_HELP, CWinApp::OnHelp)
 END_MESSAGE_MAP()
 
+void LaunchDebugger()
+{
+    if (IsDebuggerPresent())
+    {
+        // the debugger is already attached
+        return;
+    }
+
+    // get the windows system directory, ex. c:\windows\system32
+    std::wstring systemDir = DVLib::GetSystemDirectory();
+
+    // get the current process ID
+    DWORD pid = ::GetCurrentProcessId();
+
+    // create the command line
+    std::wstring vsJitDebuggerExeFilePath = DVLib::DirectoryCombine(systemDir, L"vsjitdebugger.exe");
+
+    std::wostringstream s;
+    s << L"\"" << vsJitDebuggerExeFilePath << L"\" - p " << pid;
+    std::wstring cmdLine = s.str();
+
+    // start the debugger
+    PROCESS_INFORMATION pi = { 0 };
+    DVLib::RunCmd(vsJitDebuggerExeFilePath, &pi, 0, NULL, 1);
+
+    // wait until the debugger is attached to the current process or the debugger exits
+    DWORD exitCode;
+    while (!IsDebuggerPresent()
+        && (GetExitCodeProcess(pi.hProcess, &exitCode) && exitCode == STILL_ACTIVE))
+    {
+        // sleep
+        ::Sleep(100);
+    }
+
+    // cleanup
+    CloseHandle(pi.hThread);
+    CloseHandle(pi.hProcess);
+
+    if (IsDebuggerPresent())
+    {
+        // break
+        DebugBreak();
+    }
+}
+
 CHtmlInstallerApp::CHtmlInstallerApp()
 : m_rc(0)
 {
-
+    // For debugging purposes uncomment the next line
+    // LaunchDebugger();
 }
 
 CHtmlInstallerApp theApp;
@@ -30,7 +76,7 @@ BOOL CHtmlInstallerApp::InitInstance()
         reset(InstallerLog::Instance, new InstallerLog());
         reset(InstallerSession::Instance, new InstallerSession());
         reset(InstallUILevelSetting::Instance, new InstallUILevelSetting());
-        reset(HtmLayoutDll::Instance, new HtmLayoutDll());
+        reset(SciterDll::Instance, new SciterDll());
 
         HtmlWindow::RegisterClass(m_hInstance);
 
@@ -104,7 +150,7 @@ int CHtmlInstallerApp::ExitInstance()
 {
     TRYLOG(L"htmlInstaller finished, return code: " << m_rc << DVLib::FormatMessage(L" (0x%x)", m_rc));
 
-    reset(HtmLayoutDll::Instance);
+    reset(SciterDll::Instance);
     reset(InstallerCommandLineInfo::Instance);
     reset(InstallerLauncher::Instance);
     reset(InstallerLog::Instance);

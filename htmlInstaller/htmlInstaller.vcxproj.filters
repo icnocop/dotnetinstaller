@@ -27,10 +27,10 @@
     <ClCompile Include="ExtractCabProcessor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="HTMLayoutBehaviorWeblink.cpp">
+    <ClCompile Include="SciterBehaviorWeblink.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="HtmLayoutDll.cpp">
+    <ClCompile Include="SciterDll.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="htmlInstaller.cpp">
@@ -59,10 +59,10 @@
     <ClInclude Include="ExtractCabProcessor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="HTMLayoutBehaviorWeblink.h">
+    <ClInclude Include="SciterBehaviorWeblink.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="HtmLayoutDll.h">
+    <ClInclude Include="SciterDll.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="htmlInstaller.h">

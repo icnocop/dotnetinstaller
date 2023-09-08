@@ -3,12 +3,16 @@
 #include "HtmlWindow.h"
 #include "Resource.h"
 
-HtmlWindow::HtmlWindow() 
-: htmlayout::event_handler(HANDLE_BEHAVIOR_EVENT)
-, hwnd(NULL)
+HtmlWindow::HtmlWindow()
+: hwnd(NULL)
 , m_modal(false)
 {
+}
 
+bool HtmlWindow::subscription(HELEMENT he, UINT& event_groups)
+{
+    event_groups = HANDLE_BEHAVIOR_EVENT;
+    return true;
 }
 
 void HtmlWindow::Self(HWND hWnd, HtmlWindow * inst) 
@@ -66,13 +70,34 @@ void HtmlWindow::Create(const wchar_t * filename, int x, int y, int width, int h
     CHECK_WIN32_BOOL(hwnd != NULL, 
         L"CreateWindowExW");
 
+    // set transparency
+    BYTE alpha = 255;
+    COLORREF transparencyColor = RGB(0, 0, 0);
+
+    CHECK_WIN32_BOOL(SetLayeredWindowAttributes(hwnd, transparencyColor, alpha, LWA_COLORKEY | LWA_ALPHA),
+        L"SetLayeredWindowAttributes");
+
     Self(hwnd, this);
-    HTMLayoutSetCallback(hwnd, & callback, this);
+
+    // For debugging purposes, uncomment the following few lines
+    // sciter::debug_output _;
+    // SciterSetOption(NULL, SCITER_SET_DEBUG_MODE, TRUE);
+    // SciterSetupDebugOutput(hwnd, this, &HtmlWindow::DebugOutput);
+
+    SciterSetOption(NULL, SCITER_SET_UX_THEMING, TRUE);
+    SciterSetOption(NULL, SCITER_ENABLE_UIAUTOMATION, TRUE);
+    SciterSetOption(hwnd, SCITER_SET_SCRIPT_RUNTIME_FEATURES,
+        ALLOW_FILE_IO |
+        ALLOW_SOCKET_IO |
+        ALLOW_EVAL |
+        ALLOW_SYSINFO);
+
+    SciterSetCallback(hwnd, &callback, this);
 
     std::wstring indexhtml = DVLib::DirectoryCombine(DVLib::GetModuleDirectoryW(), filename);
     if (DVLib::FileExists(indexhtml))
     {
-        CHECK_BOOL(HTMLayoutLoadFile(hwnd, indexhtml.c_str()),
+        CHECK_BOOL(SciterLoadFile(hwnd, indexhtml.c_str()),
             L"Error loading " << indexhtml);
     }
     else
@@ -81,22 +106,22 @@ void HtmlWindow::Create(const wchar_t * filename, int x, int y, int width, int h
         DWORD cb = 0;
         CHECK_BOOL(LoadResourceData(filename, pb, cb),
             L"Error loading index.html.");
-        CHECK_BOOL(HTMLayoutLoadHtml(hwnd, pb, cb),
+        CHECK_BOOL(SciterLoadHtml(hwnd, pb, cb, NULL),
             L"Error loading index.html from " << DVLib::FormatBytesW(cb) << " of resource data.");
     }
 
-    attach_event_handler(hwnd, this);
+    sciter::attach_dom_event_handler(hwnd, this);
 }
 
 HELEMENT HtmlWindow::GetRoot()
 {
-    return htmlayout::dom::element::root_element(hwnd);
+    return sciter::dom::element::root_element(hwnd);
 }
 
 int HtmlWindow::HitTest(int x, int y)
 {
-    POINT pt; 
-    pt.x = x; 
+    POINT pt;
+    pt.x = x;
     pt.y = y;
 
     ::MapWindowPoints(HWND_DESKTOP, hwnd, & pt, 1);
@@ -144,7 +169,7 @@ int HtmlWindow::HitTest(int x, int y)
 
 LRESULT HtmlWindow::on_document_complete()
 {
-    htmlayout::dom::element r = GetRoot();
+    sciter::dom::element r = GetRoot();
     body = r.find_first("body");
     caption = r.get_element_by_id("caption");
     button_min = r.get_element_by_id("minimize");
@@ -154,21 +179,28 @@ LRESULT HtmlWindow::on_document_complete()
     corner = r.get_element_by_id("corner");
 
     ::SetWindowTextW(hwnd, m_title.c_str());
-    if( caption.is_valid()) caption.set_text(m_title.c_str());
+    if (caption.is_valid())
+    {
+        caption.set_text(m_title.c_str());
+    }
 
-    OnDocumentComplete();
     return 0;
 }
 
-BOOL HtmlWindow::on_event(HELEMENT /* he */, HELEMENT target, BEHAVIOR_EVENTS type, UINT_PTR /* reason */)
-{	
+bool HtmlWindow::on_event(HELEMENT /* he */, HELEMENT target, BEHAVIOR_EVENTS type, UINT_PTR /* reason */)
+{
+    if (type == BEHAVIOR_EVENTS::DOCUMENT_COMPLETE)
+    {
+        on_document_complete();
+    }
+
     if( type != BUTTON_CLICK)
-        return FALSE; // handling only button clicks here. 
+        return false; // handling only button clicks here. 
 
     if( target == button_min)
     {
         ::ShowWindow(hwnd, SW_MINIMIZE); 
-        return TRUE;
+        return true;
     }
 
     if( target == button_max)
@@ -182,16 +214,16 @@ BOOL HtmlWindow::on_event(HELEMENT /* he */, HELEMENT target, BEHAVIOR_EVENTS ty
             ::ShowWindow(hwnd, SW_MAXIMIZE); 
         }
 
-        return TRUE;
+        return true;
     }
 
     if(target == button_close)
     {
         ::PostMessage(hwnd, WM_CLOSE, 0,0); 
-        return TRUE;
+        return true;
     }
 
-    return TRUE;
+    return true;
 }
 
 bool HtmlWindow::IsWindowMinimized() const
@@ -228,22 +260,22 @@ LRESULT CALLBACK HtmlWindow::WinProc(HWND hwnd, UINT message, WPARAM wParam, LPA
     LRESULT lResult;
     BOOL    bHandled;
 
-    // HTMLayout +
-    // HTMLayout could be created as separate window 
+    // Sciter +
+    // Sciter could be created as separate window 
     // using CreateWindow API.
-    // But in this case we are attaching HTMLayout functionality
+    // But in this case we are attaching Sciter functionality
     // to the existing window delegating windows message handling to 
-    // HTMLayoutProcND function.
-    lResult = HTMLayoutProcND(hwnd,message,wParam,lParam, &bHandled);
+    // SciterProcND function.
+    lResult = SciterProcND(hwnd,message,wParam,lParam, &bHandled);
 
-    if(bHandled)
+    if (bHandled)
     {
         return lResult;
     }
 
-    // HTMLayout -
+    // Sciter -
 
-    HtmlWindow * me = Self(hwnd);
+    HtmlWindow* me = Self(hwnd);
 
     if (me != NULL)
     {
@@ -254,49 +286,49 @@ LRESULT CALLBACK HtmlWindow::WinProc(HWND hwnd, UINT message, WPARAM wParam, LPA
         }
     }
 
-    switch (message) 
+    switch (message)
     {
+        case WM_NCHITTEST:
+            if (me)
+            {
+                return me->HitTest(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+            }
+            break;
 
-    case WM_NCHITTEST:
-        if(me)
-        {
-            return me->HitTest(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
-        }
-        break;
-
-    case WM_NCCALCSIZE:  
-        return 0; // we have no non-client areas.
-    case WM_NCPAINT:     
-        return 0; // we have no non-client areas.
-    case WM_NCACTIVATE: 
-        return (wParam == 0)? TRUE : FALSE; // we have no non-client areas.
-    case WM_GETMINMAXINFO:
+        case WM_NCCALCSIZE:
+            return 0; // we have no non-client areas.
+        case WM_NCPAINT:
+            return 0; // we have no non-client areas.
+        case WM_NCACTIVATE:
+            return (wParam == 0) ? TRUE : FALSE; // we have no non-client areas.
+        case WM_GETMINMAXINFO:
         {
             LRESULT lr = DefWindowProc(hwnd, message, wParam, lParam);
             MINMAXINFO* pmmi = (MINMAXINFO*)lParam;
-            pmmi->ptMinTrackSize.x = ::HTMLayoutGetMinWidth(hwnd);
-            RECT rc; GetWindowRect(hwnd,&rc);
-            pmmi->ptMinTrackSize.y = ::HTMLayoutGetMinHeight(hwnd, rc.right - rc.left);
+            pmmi->ptMinTrackSize.x = ::SciterGetMinWidth(hwnd);
+            RECT rc;
+            GetWindowRect(hwnd, &rc);
+            pmmi->ptMinTrackSize.y = ::SciterGetMinHeight(hwnd, rc.right - rc.left);
             return lr;
         }
-    case WM_CLOSE:
-        ::DestroyWindow(hwnd);
-        return 0;
-    case WM_DESTROY:
-        Self(hwnd, 0);
-        PostQuitMessage(0);
-        return 0;
+        case WM_CLOSE:
+            ::DestroyWindow(hwnd);
+            return 0;
+        case WM_DESTROY:
+            Self(hwnd, 0);
+            PostQuitMessage(0);
+            return 0;
     }
 
     return DefWindowProc(hwnd, message, wParam, lParam);
 }
 
-LRESULT HtmlWindow::on_load_data(LPNMHL_LOAD_DATA pnmld)
+LRESULT HtmlWindow::on_load_data(LPSCN_LOAD_DATA pnmld)
 {
     PBYTE pb; DWORD cb;
     if (LoadResourceData(pnmld->uri, pb, cb))
     {
-        ::HTMLayoutDataReady(pnmld->hdr.hwndFrom, pnmld->uri, pb,  cb);
+        ::SciterDataReady(pnmld->hwnd, pnmld->uri, pb,  cb);
     }
     return LOAD_OK;
 }
@@ -309,6 +341,14 @@ bool HtmlWindow::LoadResourceData(LPCWSTR uri, PBYTE& pb, DWORD& cb)
     }
 
     std::wstring name = uri;
+
+    // remove file:// prefix from uri if it exists
+    std::wstring filePrefix = L"file://";
+    if (name.compare(0, filePrefix.length(), filePrefix) == 0)
+    {
+        name.erase(0, filePrefix.length());
+    }
+
     for(unsigned int i = 0; i < name.length(); i++)
     {
         switch(name[i])
@@ -360,7 +400,6 @@ void HtmlWindow::ModalLoop()
         MSG msg;
         while (GetMessage(& msg, NULL, 0, 0) && m_modal)
         {
-            htmlayout::queue::execute();
             TranslateMessage(&msg);
             DispatchMessage(&msg);
         }
@@ -395,4 +434,28 @@ void HtmlWindow::DoModal(int cmd)
         ::DestroyWindow(hwnd);
         throw;
     }
+}
+
+HINSTANCE HtmlWindow::get_resource_instance()
+{
+    return AfxGetApp()->m_hInstance;
+}
+
+VOID SC_CALLBACK HtmlWindow::DebugOutput(LPVOID param, UINT subsystem, UINT severity, LPCWSTR text, UINT text_length)
+{
+    aux::w2utf converter(text);
+    static const char* subsystem_names[] = {
+      "DOM",
+      "CSSS",
+      "CSS",
+      "TIF",
+    };
+    static const char* severity_names[] = {
+      "INFO",
+      "WARNING",
+      "ERROR",
+    };
+    std::wstring message = DVLib::FormatMessageW(
+        L"[%S] %S", subsystem_names[subsystem], converter.c_str());
+    ::OutputDebugString(message.c_str());
 }

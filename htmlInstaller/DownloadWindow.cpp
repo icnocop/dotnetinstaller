@@ -43,7 +43,7 @@ void DownloadWindow::OnShow()
     CHECK_BOOL(get(m_downloaddialog) != NULL,
         L"Missing download dialog configuration.");
 
-    htmlayout::dom::element r = GetRoot();
+    sciter::dom::element r = GetRoot();
 
     // status
     status = r.get_element_by_id("status");
@@ -56,7 +56,7 @@ void DownloadWindow::OnShow()
     progress = r.get_element_by_id("progress");
     ClearProgress();
 
-    htmlayout::dom::element dialog_message = r.get_element_by_id("dialog_message");
+    sciter::dom::element dialog_message = r.get_element_by_id("dialog_message");
     if (dialog_message.is_valid()) 
     {
         dialog_message.set_text(m_downloaddialog->help_message.GetValue().c_str());
@@ -96,7 +96,7 @@ void DownloadWindow::OnStart()
     download_started = true;
     download_cancelled = false;
     m_downloaddialog->callback = this;
-    htmlayout::queue::push(new html_set_attribute_task(& button_start, "disabled", L"disabled"), hwnd);
+    Html::SetAttribute(&button_start, "disabled", L"disabled");
     ClearError();
     ClearProgress();
     m_downloaddialog->BeginExec();
@@ -104,16 +104,16 @@ void DownloadWindow::OnStart()
 
 void DownloadWindow::OnCancel()
 {
-    htmlayout::queue::push(new html_set_attribute_task(& button_cancel, "disabled", L"disabled"), hwnd);
+    Html::SetAttribute(&button_cancel, "disabled", L"disabled");
     download_cancelled = true;
     Stop();
 }
 
-BOOL DownloadWindow::on_event(HELEMENT he, HELEMENT target, BEHAVIOR_EVENTS type, UINT_PTR reason)
+bool DownloadWindow::on_event(HELEMENT he, HELEMENT target, BEHAVIOR_EVENTS type, UINT_PTR reason)
 {
     try
     {
-        htmlayout::dom::element target_element = target;
+        sciter::dom::element target_element = target;
 
         if (type == BUTTON_CLICK && button_cancel == target_element)
         {
@@ -138,21 +138,21 @@ BOOL DownloadWindow::on_event(HELEMENT he, HELEMENT target, BEHAVIOR_EVENTS type
 
 void DownloadWindow::ShowError(const std::wstring& message)
 {
-    htmlayout::queue::push(new html_clear_style_attribute_task(& error, "display"), hwnd);
-    htmlayout::queue::push(new html_set_text_task(& error, message), hwnd);
+    Html::Show(&error);
+    Html::SetText(&error, message);
 }
 
 void DownloadWindow::ClearError() 
 {
     m_recorded_error = 0;
-    htmlayout::queue::push(new html_set_style_attribute_task(& error, "display", L"none"), hwnd);
-    htmlayout::queue::push(new html_set_text_task(& error, L""), hwnd);
+    Html::Hide(&error);
+    Html::SetText(&error, L"");
 }
 
 void DownloadWindow::SetProgressTotal(int pc)
 {
     m_total_progress = pc;
-    htmlayout::queue::push(new html_set_attribute_task(& progress, "maxvalue", DVLib::towstring(pc)), hwnd);
+    Html::SetAttribute(&progress, "maxvalue", DVLib::towstring(pc));
 }
 
 void DownloadWindow::ClearProgress() 
@@ -162,14 +162,14 @@ void DownloadWindow::ClearProgress()
 
 void DownloadWindow::SetStatus(const std::wstring& msg)
 {
-    htmlayout::queue::push(new html_set_text_task(& status, msg), hwnd);
+    Html::SetText(&status, msg);
 }
 
 void DownloadWindow::SetProgress(int pc) 
 {
     m_recorded_progress = pc;
-    htmlayout::queue::push(new html_clear_style_attribute_task(& progress, "display"), hwnd);
-    htmlayout::queue::push(new html_set_attribute_task(& progress, "value", DVLib::towstring(pc)), hwnd);
+    Html::Show(&progress);
+    Html::SetAttribute(&progress, "value", DVLib::towstring(pc));
 }
 
 int DownloadWindow::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)

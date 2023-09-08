@@ -12,7 +12,7 @@ namespace dotNetInstallerUnitTests
     using NUnit.Framework;
 
     [TestFixture]
-    public class AutoCloseUnitTests
+    public class AutoCloseUnitTests : UnitTestsBase
     {
         [Test]
         public void TestAutoClosesAfterInstallWhenComponentInstallSucceeds()
@@ -51,7 +51,7 @@ namespace dotNetInstallerUnitTests
             options.quiet = false;
 
             // will auto close since all components installed successfully
-            Assert.AreEqual(0, dotNetInstallerExeUtils.Run(options, TimeSpan.FromSeconds(3)));
+            Assert.AreEqual(0, dotNetInstallerExeUtils.Run(options, TimeSpan.FromSeconds(30)));
 
             File.Delete(configFilename);
             File.Delete(markerFilename);
@@ -208,7 +208,7 @@ namespace dotNetInstallerUnitTests
             options.quiet = false;
 
             // will auto close since all checked components were installed
-            Assert.AreEqual(0, dotNetInstallerExeUtils.Run(options, TimeSpan.FromSeconds(6)));
+            Assert.AreEqual(0, dotNetInstallerExeUtils.Run(options, TimeSpan.FromSeconds(30)));
 
             File.Delete(configFilename);
             File.Delete(markerFilename1);

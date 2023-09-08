@@ -14,50 +14,38 @@
       <content>
         <para>
           HTMLInstaller's rendering engine is <externalLink>
-            <linkText>HTMLayout</linkText>
-            <linkUri>http://www.terrainformatica.com/htmlayout/main.whtm</linkUri>
-          </externalLink>. It supports HTML, CSS, behaviors and more.
+            <linkText>Sciter.JS</linkText>
+            <linkUri>https://docs.sciter.com/</linkUri>
+          </externalLink>. It supports HTML, CSS, JS, behaviors and more.
           <list class="bullet">
             <listItem>
               <externalLink>
-                <linkText>Supported Tags and Attributes</linkText>
-                <linkUri>http://www.terrainformatica.com/htmlayout/tagsattributes.whtm</linkUri>
-              </externalLink>
-            </listItem>
-            <listItem>
-              <externalLink>
-                <linkText>HTMLayout-specific Tags</linkText>
-                <linkUri>http://www.terrainformatica.com/htmlayout/tags.whtm</linkUri>
+                <linkText>Supported HTML Elements</linkText>
+                <linkUri>https://docs.sciter.com/docs/HTML/html-elements</linkUri>
               </externalLink>
             </listItem>
             <listItem>
               <externalLink>
                 <linkText>Length Units</linkText>
-                <linkUri>http://www.terrainformatica.com/htmlayout/fspu.whtm</linkUri>
-              </externalLink>
-            </listItem>
-            <listItem>
-              <externalLink>
-                <linkText>HTMLayout-specific Tags</linkText>
-                <linkUri>http://www.terrainformatica.com/htmlayout/tags.whtm</linkUri>
+                <linkUri>https://docs.sciter.com/docs/CSS/units/dimentional</linkUri>
               </externalLink>
             </listItem>
             <listItem>
               <externalLink>
                 <linkText>Supported CSS Attributes</linkText>
-                <linkUri>http://www.terrainformatica.com/htmlayout/cssmap.whtm</linkUri>
+                <linkUri>https://sciter.com/docs/content/css/cssmap.html</linkUri>
               </externalLink>
             </listItem>
             <listItem>
               <externalLink>
                 <linkText>Supported CSS Selectors</linkText>
-                <linkUri>http://www.terrainformatica.com/htmlayout/selectors.whtm</linkUri>
+                <linkUri>https://docs.sciter.com/docs/CSS/selectors</linkUri>
               </externalLink>
             </listItem>
             <listItem>
               <externalLink>
                 <linkText>Built-In Behaviors</linkText>
-                <linkUri>http://www.terrainformatica.com/wiki/h-smile/built-in-behaviors/start</linkUri>
+                <linkUri>https://docs.sciter.com/docs/behaviors/</linkUri>
               </externalLink>
             </listItem>
           </list>

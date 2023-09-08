@@ -32,11 +32,11 @@ bool InstallerWindow::Run()
 
 void InstallerWindow::OnShow()
 {
-    htmlayout::dom::element r = GetRoot();
+    sciter::dom::element r = GetRoot();
     components = r.get_element_by_id("components");
 
     // os label
-    htmlayout::dom::element os = r.get_element_by_id("os");
+    sciter::dom::element os = r.get_element_by_id("os");
     if (os.is_valid())
     {
         os.set_text((DVLib::GetOperatingSystemVersionString() + L" (" + 
@@ -61,7 +61,7 @@ void InstallerWindow::OnShow()
     CHECK_BOOL(p_configuration != NULL, L"Invalid configuration");
 
     // labels and info
-    htmlayout::dom::element dialog_message = r.get_element_by_id("dialog_message");
+    sciter::dom::element dialog_message = r.get_element_by_id("dialog_message");
     if (dialog_message.is_valid()) 
     {
         dialog_message.set_text(InstallerSession::Instance->sequence == SequenceInstall 
@@ -102,7 +102,7 @@ void InstallerWindow::OnShow()
     AddUserControls();
     AddElevatedControls();
 
-    Start();	
+    Start();
 }
 
 bool InstallerWindow::RunDownloadConfiguration(const DownloadDialogPtr& p_Configuration)
@@ -123,22 +123,22 @@ bool InstallerWindow::RunDownloadConfiguration(const DownloadDialogPtr& p_Config
 
 void InstallerWindow::AddComponent(const ComponentPtr& component)
 {
-    htmlayout::dom::element opt = htmlayout::dom::element::create("widget", component->description.c_str());
-    opt["type"] = L"checkbox";
-    opt["id"] = component->id.GetValue().c_str();
-    opt["component_ptr"] = DVLib::towstring(get(component)).c_str();
-    if (component->checked) opt["checked"] = L"true";
-    if (component->disabled) opt["disabled"] = L"true";
-    opt["installed"] = (component->installed ? L"true" : L"false");
-    opt["required"] = (component->IsRequired() ? L"true" : L"false");
-    htmlayout::queue::push(new html_insert_task(& components, opt, html_insert_task::last), HtmlWindow::s_hwnd);
+    sciter::dom::element opt = sciter::dom::element::create("widget", component->description.c_str());
+    opt.set_attribute("type", L"checkbox");
+    opt.set_attribute("id", component->id.GetValue().c_str());
+    opt.set_attribute("component_ptr", DVLib::towstring(get(component)).c_str());
+    if (component->checked) opt.set_attribute("checked", L"true");
+    if (component->disabled) opt.set_attribute("disabled", L"true");
+    opt.set_attribute("installed", (component->installed ? L"true" : L"false"));
+    opt.set_attribute("required", (component->IsRequired() ? L"true" : L"false"));
+    Html::Insert(&components, opt, components.children_count());
 }
 
-BOOL InstallerWindow::on_event(HELEMENT he, HELEMENT target, BEHAVIOR_EVENTS type, UINT_PTR reason)
+bool InstallerWindow::on_event(HELEMENT he, HELEMENT target, BEHAVIOR_EVENTS type, UINT_PTR reason)
 {
     try
     {
-        htmlayout::dom::element target_element = target;
+        sciter::dom::element target_element = target;
         if (type == BUTTON_CLICK && button_skip == target_element)
         {
             OnOK();
@@ -156,8 +156,8 @@ BOOL InstallerWindow::on_event(HELEMENT he, HELEMENT target, BEHAVIOR_EVENTS typ
         }
         else if (type == BUTTON_STATE_CHANGED || type == EDIT_VALUE_CHANGED || type == SELECT_STATE_CHANGED)
         {
-            const wchar_t * component_ptr = target_element.get_attribute("component_ptr");
-            if (component_ptr != NULL)
+            const sciter::string component_ptr = target_element.get_attribute("component_ptr");
+            if (!component_ptr.empty())
             {
                 Component * p_component = reinterpret_cast<Component *>(DVLib::wstring2long(component_ptr, 16));
                 p_component->checked = target_element.get_state(STATE_CHECKED);
@@ -174,21 +174,21 @@ BOOL InstallerWindow::on_event(HELEMENT he, HELEMENT target, BEHAVIOR_EVENTS typ
     }
 }
 
-BOOL InstallerWindow::on_mouse_click(HELEMENT /* he */, HELEMENT /* target */,
+bool InstallerWindow::on_mouse_click(HELEMENT /* he */, HELEMENT /* target */,
                                      POINT /* pt */, UINT /* mouseButtons */, UINT /* keyboardStates */)
 {
-    return FALSE;
+    return false;
 }
 
-BOOL InstallerWindow::on_mouse_dclick(HELEMENT /* he */, HELEMENT target,
+bool InstallerWindow::on_mouse_dclick(HELEMENT /* he */, HELEMENT target,
                                       POINT pt, UINT /* mouseButtons */, UINT keyboardStates)
 {
     if (keyboardStates != 0)
     {
-        htmlayout::dom::element target_element = target;
+        sciter::dom::element target_element = target;
         if (target_element.is_valid())
         {
-            htmlayout::dom::element component_element = target_element.find_element(GetHwnd(), pt);
+            sciter::dom::element component_element = target_element.find_element(GetHwnd(), pt);
             if (component_element.is_valid())
             {
                 if (component_element.get_ctl_type() != CTL_CHECKBOX)
@@ -196,8 +196,8 @@ BOOL InstallerWindow::on_mouse_dclick(HELEMENT /* he */, HELEMENT target,
 
                 if (component_element.is_valid() && component_element.get_ctl_type() == CTL_CHECKBOX)
                 {
-                    const wchar_t * component_ptr = component_element.get_attribute("component_ptr");
-                    if (component_ptr != NULL)
+                    const sciter::string component_ptr = component_element.get_attribute("component_ptr");
+                    if (!component_ptr.empty())
                     {
                         Component * p_component = reinterpret_cast<Component *>(DVLib::wstring2long(component_ptr, 16));
 
@@ -206,7 +206,7 @@ BOOL InstallerWindow::on_mouse_dclick(HELEMENT /* he */, HELEMENT target,
                             p_component->checked = ! component_element.get_state(STATE_CHECKED);
                             if (p_component->checked)
                             {
-                                component_element["checked"] = L"true";
+                                component_element.set_attribute("checked", L"true");
                                 component_element.set_state(STATE_CHECKED, 0);
                             }
                             else
@@ -233,14 +233,14 @@ BOOL InstallerWindow::on_mouse_dclick(HELEMENT /* he */, HELEMENT target,
                             }
                         }
 
-                        return TRUE;
+                        return true;
                     }
                 }
             }
         }
     }
 
-    return FALSE;
+    return false;
 }
 
 UINT InstallerWindow::RunComponentOnThread(LPVOID pParam)
@@ -289,7 +289,7 @@ void InstallerWindow::RunComponent(const ComponentPtr& component)
     }
 }
 
-BOOL InstallerWindow::on_mouse(HELEMENT he, HELEMENT target, UINT event_type, POINT pt, UINT mouseButtons, UINT keyboardStates)
+bool InstallerWindow::on_mouse(HELEMENT he, HELEMENT target, UINT event_type, POINT pt, UINT mouseButtons, UINT keyboardStates)
 {
     switch(event_type)
     {
@@ -299,7 +299,7 @@ BOOL InstallerWindow::on_mouse(HELEMENT he, HELEMENT target, UINT event_type, PO
         return on_mouse_dclick(he, target, pt, mouseButtons, keyboardStates);
     }
 
-    return FALSE;
+    return false;
 }
 
 void InstallerWindow::OnOK()
@@ -329,45 +329,46 @@ void InstallerWindow::OnInstall()
 
 void InstallerWindow::ShowError(const std::wstring& message)
 {
-    htmlayout::queue::push(new html_clear_style_attribute_task(& error, "display"), HtmlWindow::s_hwnd);
-    htmlayout::queue::push(new html_set_text_task(& error, message), HtmlWindow::s_hwnd);
+    Html::Show(&error);
+    Html::SetText(&error, message);
 }
 
-void InstallerWindow::ClearError() 
+void InstallerWindow::ClearError()
 { 
     m_download_cancelled = false;
     InstallerUI::ClearError();
-    htmlayout::queue::push(new html_set_style_attribute_task(& error, "display", L"none"), HtmlWindow::s_hwnd);
-    htmlayout::queue::push(new html_set_text_task(& error, L""), HtmlWindow::s_hwnd);
+
+    Html::Hide(&error);
+    Html::SetText(&error, L"");
 }
 
 void InstallerWindow::SetProgressTotal(int pc)
 {
     m_total_progress = pc;
-    htmlayout::queue::push(new html_set_attribute_task(& progress, "maxvalue", DVLib::towstring(pc)), HtmlWindow::s_hwnd);
+    Html::SetAttribute(&progress, "maxvalue", DVLib::towstring(pc));
 }
 
-void InstallerWindow::ClearProgress() 
+void InstallerWindow::ClearProgress()
 {
     m_recorded_progress = 0;
-    htmlayout::queue::push(new html_set_style_attribute_task(& progress, "display", L"none"), HtmlWindow::s_hwnd);
+    Html::Hide(&progress);
 }
 
 void InstallerWindow::SetStatus(const std::wstring& msg)
 {
-    htmlayout::queue::push(new html_set_text_task(& status, msg), HtmlWindow::s_hwnd);
+    Html::SetText(&status, msg);
 }
 
 void InstallerWindow::SetProgress(int pc) 
 {
     m_recorded_progress = pc;
-    htmlayout::queue::push(new html_clear_style_attribute_task(& progress, "display"), HtmlWindow::s_hwnd);
-    htmlayout::queue::push(new html_set_attribute_task(& progress, "value", DVLib::towstring(pc)), HtmlWindow::s_hwnd);
+    Html::Show(&progress);
+    Html::SetAttribute(&progress, "value", DVLib::towstring(pc));
 }
 
 void InstallerWindow::ResetContent()
 {
-    htmlayout::queue::push(new html_clear_task(& components), HtmlWindow::s_hwnd);
+    Html::Clear(&components);
 }
 
 void InstallerWindow::SetControlValues()
@@ -378,11 +379,13 @@ void InstallerWindow::SetControlValues()
         L"CreateEvent");
 
     std::wstring error;
-    htmlayout::queue::push(new SetControlValuesTask(body, get(done), & error), HtmlWindow::s_hwnd);	
+
+    SetControlValuesTask* task = new SetControlValuesTask(body, get(done), & error);
+    task->exec();
 
     ::WaitForSingleObject(get(done), INFINITE);
 
-    if (! error.empty())
+    if (!error.empty())
     {
         THROW_EX(error);
     }
@@ -399,7 +402,7 @@ void InstallerWindow::OnExecBegin()
     InstallConfiguration * p_configuration = reinterpret_cast<InstallConfiguration *>(get(m_configuration));
     CHECK_BOOL(p_configuration != NULL, L"Invalid configuration");
 
-    ExtractCab(L"", p_configuration->show_cab_dialog);		
+    ExtractCab(L"", p_configuration->show_cab_dialog);
 }
 
 bool InstallerWindow::OnComponentExecBegin(const ComponentPtr& component)
@@ -430,7 +433,7 @@ bool InstallerWindow::OnComponentExecError(const ComponentPtr& component, std::e
 
 void InstallerWindow::ExtractCab(const std::wstring& id, bool /* display_progress */)
 {
-    ExtractCabProcessorPtr p_extractcab(new ExtractCabProcessor(s_hinstance, id, & status));	
+    ExtractCabProcessorPtr p_extractcab(new ExtractCabProcessor(s_hinstance, id, & status));
     int cab_count = p_extractcab->GetCabCount();
     if (cab_count == 0)
     {
@@ -453,7 +456,7 @@ int InstallerWindow::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
     {
     case WM_CLOSE:
 
-        if (IsExecuting(1000 * 3)) 
+        if (IsExecuting(INFINITE))
             return -1;
 
         EndExec();
@@ -468,10 +471,10 @@ int InstallerWindow::ExecOnThread()
 {
     try
     {
-        auto_any<htmlayout::dom::element *, html_disabled> btn_install(& button_install);
-        htmlayout::queue::push(new html_set_attribute_task(& button_install, "disabled", L"disabled"), HtmlWindow::s_hwnd);
-        auto_any<htmlayout::dom::element *, html_disabled> btn_skip(& button_skip);
-        htmlayout::queue::push(new html_set_attribute_task(& button_skip, "disabled", L"disabled"), HtmlWindow::s_hwnd);
+        auto_any<sciter::dom::element *, html_disabled> btn_install(& button_install);
+        Html::Disable(&button_install);
+        auto_any<sciter::dom::element*, html_disabled> btn_skip(&button_skip);
+        Html::Disable(&button_skip);
 
         ClearError();
         ClearProgress();
@@ -621,53 +624,53 @@ std::wstring InstallerWindow::GetControlStyle(const ControlText& control)
 
 void InstallerWindow::AddControl(const ControlLabel& control)
 {
-    htmlayout::dom::element elt = htmlayout::dom::element::create("span", control.text.GetValue().c_str());
-    elt["control_ptr"] = DVLib::towstring(& const_cast<ControlLabel&>(control)).c_str();	
-    if (! control.IsEnabled()) elt["disabled"] = L"true";
-    if (control.has_value_disabled) elt["has_value_disabled"] = L"true";
-    elt["style"] = (GetControlStyle(control) + GetPositionStyle(control.position)).c_str();
-    htmlayout::queue::push(new html_insert_task(& components, elt, components.children_count()), HtmlWindow::s_hwnd);
+    sciter::dom::element elt = sciter::dom::element::create("span", control.text.GetValue().c_str());
+    elt.set_attribute("control_ptr", DVLib::towstring(& const_cast<ControlLabel&>(control)).c_str());
+    if (!control.IsEnabled()) elt.set_attribute("disabled", L"true");
+    if (control.has_value_disabled) elt.set_attribute("has_value_disabled", L"true");
+    elt.set_attribute("style", (GetControlStyle(control) + GetPositionStyle(control.position)).c_str());
+    Html::Insert(&components, elt, components.children_count());
 }
 
 void InstallerWindow::AddControl(const ControlCheckBox& control)
 {
-    htmlayout::dom::element elt = htmlayout::dom::element::create("widget", control.text.GetValue().c_str());
-    elt["type"] = L"checkbox";
-    elt["id"] = control.id.GetValue().c_str();
-    if (control.checked) elt["checked"] = L"true";
-    if (! control.IsEnabled()) elt["disabled"] = L"true";
-    if (control.has_value_disabled) elt["has_value_disabled"] = L"true";
-    elt["control_ptr"] = DVLib::towstring(& const_cast<ControlCheckBox&>(control)).c_str();	
-    elt["style"] = (GetControlStyle(control) + GetPositionStyle(control.position)).c_str();
-    htmlayout::queue::push(new html_insert_task(& components, elt, components.children_count()), HtmlWindow::s_hwnd);
+    sciter::dom::element elt = sciter::dom::element::create("widget", control.text.GetValue().c_str());
+    elt.set_attribute("type", L"checkbox");
+    elt.set_attribute("id", control.id.GetValue().c_str());
+    if (control.checked) elt.set_attribute("checked", L"true");
+    if (!control.IsEnabled()) elt.set_attribute("disabled", L"true");
+    if (control.has_value_disabled) elt.set_attribute("has_value_disabled", L"true");
+    elt.set_attribute("control_ptr", DVLib::towstring(& const_cast<ControlCheckBox&>(control)).c_str());
+    elt.set_attribute("style", (GetControlStyle(control) + GetPositionStyle(control.position)).c_str());
+    Html::Insert(&components, elt, components.children_count());
 }
 
 void InstallerWindow::AddControl(const ControlEdit& control)
 {
-    htmlayout::dom::element elt = htmlayout::dom::element::create("widget", control.text.GetValue().c_str());
-    elt["type"] = L"text";
-    elt["id"] = control.id.GetValue().c_str();
-    if (! control.IsEnabled()) elt["disabled"] = L"true";
-    if (control.has_value_disabled) elt["has_value_disabled"] = L"true";
-    elt["control_ptr"] = DVLib::towstring(& const_cast<ControlEdit&>(control)).c_str();	
-    elt["style"] = (GetControlStyle(control) + GetPositionStyle(control.position)).c_str();
-    htmlayout::queue::push(new html_insert_task(& components, elt, components.children_count()), HtmlWindow::s_hwnd);
+    sciter::dom::element elt = sciter::dom::element::create("widget", control.text.GetValue().c_str());
+    elt.set_attribute("type", L"text");
+    elt.set_attribute("id", control.id.GetValue().c_str());
+    if (!control.IsEnabled()) elt.set_attribute("disabled", L"true");
+    if (control.has_value_disabled) elt.set_attribute("has_value_disabled", L"true");
+    elt.set_attribute("control_ptr", DVLib::towstring(& const_cast<ControlEdit&>(control)).c_str());
+    elt.set_attribute("style", (GetControlStyle(control) + GetPositionStyle(control.position)).c_str());
+    Html::Insert(&components, elt, components.children_count());
 }
 
 void InstallerWindow::AddControl(const ControlBrowse& control)
 {
-    htmlayout::dom::element elt = htmlayout::dom::element::create("widget");
-    if (control.folders_only) elt["type"] = L"folder-path";
-    else elt["type"] = L"file-path";
-    elt["id"] = control.id.GetValue().c_str();
-    if (! control.filter.empty()) elt["filter"] = control.filter.GetValue().c_str();
-    if (! control.IsEnabled()) elt["disabled"] = L"true";
-    if (control.has_value_disabled) elt["has_value_disabled"] = L"true";
-    elt["novalue"] = control.text.GetValue().c_str();
+    sciter::dom::element elt = sciter::dom::element::create("widget");
+    if (control.folders_only) elt.set_attribute("type", L"folder-path");
+    else elt.set_attribute("type", L"file-path");
+    elt.set_attribute("id", control.id.GetValue().c_str());
+    if (!control.filter.empty()) elt.set_attribute("filter", control.filter.GetValue().c_str());
+    if (!control.IsEnabled()) elt.set_attribute("disabled", L"true");
+    if (control.has_value_disabled) elt.set_attribute("has_value_disabled", L"true");
+    elt.set_attribute("novalue", control.text.GetValue().c_str());
     // TODO: control.allow_edit, control.must_exist, control.hide_readonly
-    elt["control_ptr"] = DVLib::towstring(& const_cast<ControlBrowse&>(control)).c_str();	
-    elt["style"] = (GetControlStyle(control) + GetPositionStyle(control.position)).c_str();
-    htmlayout::queue::push(new html_insert_task(& components, elt, components.children_count()), HtmlWindow::s_hwnd);
+    elt.set_attribute("control_ptr", DVLib::towstring(& const_cast<ControlBrowse&>(control)).c_str());
+    elt.set_attribute("style", (GetControlStyle(control) + GetPositionStyle(control.position)).c_str());
+    Html::Insert(&components, elt, components.children_count());
 }
 
 void InstallerWindow::AddControl(const ControlLicense& control)
@@ -678,16 +681,16 @@ void InstallerWindow::AddControl(const ControlLicense& control)
         checkbox_rect.right = checkbox_rect.left + 20;
         WidgetPosition control_position = control.position;
         control_position.FromRect(checkbox_rect);
-        htmlayout::dom::element elt = htmlayout::dom::element::create("widget");
-        elt["type"] = L"checkbox";
-        elt["id"] = control.resource_id.GetValue().c_str();
-        if (control.accepted) elt["checked"] = L"true";
-        if (! control.IsEnabled()) elt["disabled"] = L"true";
-        if (control.has_value_disabled) elt["has_value_disabled"] = L"true";
-        elt["license"] = L"true";
-        elt["control_ptr"] = DVLib::towstring(& const_cast<ControlLicense&>(control)).c_str();
-        elt["style"] = GetPositionStyle(control_position).c_str();
-        htmlayout::queue::push(new html_insert_task(& components, elt, components.children_count()), HtmlWindow::s_hwnd);
+        sciter::dom::element elt = sciter::dom::element::create("widget");
+        elt.set_attribute("type", L"checkbox");
+        elt.set_attribute("id", control.resource_id.GetValue().c_str());
+        if (control.accepted) elt.set_attribute("checked", L"true");
+        if (!control.IsEnabled()) elt.set_attribute("disabled", L"true");
+        if (control.has_value_disabled) elt.set_attribute("has_value_disabled", L"true");
+        elt.set_attribute("license", L"true");
+        elt.set_attribute("control_ptr", DVLib::towstring(& const_cast<ControlLicense&>(control)).c_str());
+        elt.set_attribute("style", GetPositionStyle(control_position).c_str());
+        Html::Insert(&components, elt, components.children_count());
     }
     // hyperlink
     {
@@ -695,39 +698,39 @@ void InstallerWindow::AddControl(const ControlLicense& control)
         CRect link_rect = control_position.ToRect();
         link_rect.left += 20;
         control_position.FromRect(link_rect);
-        htmlayout::dom::element elt = htmlayout::dom::element::create("a", control.text.GetValue().c_str());
-        elt["href"] = control.license_file.GetValue().c_str();
-        elt["target"] = L"_blank";
-        if (! control.IsEnabled()) elt["disabled"] = L"true";
-        elt["control_ptr"] = DVLib::towstring(& const_cast<ControlLicense&>(control)).c_str();	
-        elt["style"] = (GetControlStyle(control) + GetPositionStyle(control_position)).c_str();
-        htmlayout::queue::push(new html_insert_task(& components, elt, components.children_count()), HtmlWindow::s_hwnd);
+        sciter::dom::element elt = sciter::dom::element::create("a", control.text.GetValue().c_str());
+        elt.set_attribute("href", control.license_file.GetValue().c_str());
+        elt.set_attribute("target", L"_blank");
+        if (!control.IsEnabled()) elt.set_attribute("disabled", L"true");
+        elt.set_attribute("control_ptr", DVLib::towstring(& const_cast<ControlLicense&>(control)).c_str());
+        elt.set_attribute("style", (GetControlStyle(control) + GetPositionStyle(control_position)).c_str());
+        Html::Insert(&components, elt, components.children_count());
     }
 }
 
 void InstallerWindow::AddControl(const ControlHyperlink& control)
 {
-    htmlayout::dom::element elt = htmlayout::dom::element::create("a", control.text.GetValue().c_str());
-    elt["href"] = control.uri.GetValue().c_str();
-    elt["target"] = L"_blank";
-    if (! control.IsEnabled()) elt["disabled"] = L"true";
-    if (control.has_value_disabled) elt["has_value_disabled"] = L"true";
-    elt["control_ptr"] = DVLib::towstring(& const_cast<ControlHyperlink&>(control)).c_str();	
-    elt["style"] = (GetControlStyle(control) + GetPositionStyle(control.position)).c_str();
-    htmlayout::queue::push(new html_insert_task(& components, elt, components.children_count()), HtmlWindow::s_hwnd);
+    sciter::dom::element elt = sciter::dom::element::create("a", control.text.GetValue().c_str());
+    elt.set_attribute("href", control.uri.GetValue().c_str());
+    elt.set_attribute("target", L"_blank");
+    if (!control.IsEnabled()) elt.set_attribute("disabled", L"true");
+    if (control.has_value_disabled) elt.set_attribute("has_value_disabled", L"true");
+    elt.set_attribute("control_ptr", DVLib::towstring(& const_cast<ControlHyperlink&>(control)).c_str());
+    elt.set_attribute("style", (GetControlStyle(control) + GetPositionStyle(control.position)).c_str());
+    Html::Insert(&components, elt, components.children_count());
 }
 
 void InstallerWindow::AddControl(const ControlImage& control)
 {
-    htmlayout::dom::element elt = htmlayout::dom::element::create("img");
-    elt["src"] = control.resource_id.GetValue().c_str();
+    sciter::dom::element elt = sciter::dom::element::create("img");
+    elt.set_attribute("src", control.resource_id.GetValue().c_str());
     CHECK_BOOL(DVLib::ResourceExists(s_hinstance, control.resource_id.GetValue(), L"CUSTOM"),
         L"Resource " << control.resource_id.GetValue() << " doesn't exist");
-    if (! control.IsEnabled()) elt["disabled"] = L"true";
-    if (control.has_value_disabled) elt["has_value_disabled"] = L"true";
-    elt["control_ptr"] = DVLib::towstring(& const_cast<ControlImage&>(control)).c_str();	
-    elt["style"] = GetPositionStyle(control.position).c_str();
-    htmlayout::queue::push(new html_insert_task(& components, elt, components.children_count()), HtmlWindow::s_hwnd);
+    if (!control.IsEnabled()) elt.set_attribute("disabled", L"true");
+    if (control.has_value_disabled) elt.set_attribute("has_value_disabled", L"true");
+    elt.set_attribute("control_ptr", DVLib::towstring(& const_cast<ControlImage&>(control)).c_str());
+    elt.set_attribute("style", GetPositionStyle(control.position).c_str());
+    Html::Insert(&components, elt, components.children_count());
 }
 
 void InstallerWindow::OnDocumentComplete()
@@ -740,6 +743,6 @@ void InstallerWindow::OnDocumentComplete()
 
 void InstallerWindow::SetElevationRequired(bool required)
 {
-    auto_any<htmlayout::dom::element *, html_disabled> btn_install(& button_install);
-    htmlayout::queue::push(new html_set_attribute_task(& button_install, "elevate", required ? L"true" : L"false"), HtmlWindow::s_hwnd);
+    auto_any<sciter::dom::element *, html_disabled> btn_install(& button_install);
+    Html::SetAttribute(&button_install, "elevate", required ? L"true" : L"false");
 }

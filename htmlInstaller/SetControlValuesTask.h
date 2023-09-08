@@ -1,13 +1,13 @@
 #pragma once
 
-class SetControlValuesTask : public htmlayout::gui_task
+class SetControlValuesTask
 {
 private:
-	htmlayout::dom::element m_root;
+	sciter::dom::element m_root;
 	HANDLE m_event;
 	std::wstring * m_perror;
 public:
-	SetControlValuesTask(const htmlayout::dom::element& root, HANDLE evt, std::wstring * perror);
-	void exec(htmlayout::dom::element elt);
+	SetControlValuesTask(const sciter::dom::element& root, HANDLE evt, std::wstring * perror);
+	void exec(sciter::dom::element elt);
 	void exec();	
 };

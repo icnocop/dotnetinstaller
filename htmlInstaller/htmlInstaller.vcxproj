@@ -55,7 +55,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\ThirdParty\HTMLayoutSDK\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\ThirdParty\sciter-js-sdk-5.0.2.21\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -64,9 +64,7 @@
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>HTMLayout.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>..\ThirdParty\HTMLayoutSDK\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <DelayLoadDLLs>Htmlayout.dll;%(DelayLoadDLLs)</DelayLoadDLLs>
+      <DelayLoadDLLs>sciter.dll;%(DelayLoadDLLs)</DelayLoadDLLs>
       <SubSystem>Windows</SubSystem>
       <SupportUnloadOfDelayLoadedDLL>true</SupportUnloadOfDelayLoadedDLL>
       <TargetMachine>MachineX86</TargetMachine>
@@ -76,16 +74,14 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
-      <AdditionalIncludeDirectories>..\ThirdParty\HTMLayoutSDK\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\ThirdParty\sciter-js-sdk-5.0.2.21\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>HTMLayout.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>..\ThirdParty\HTMLayoutSDK\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <DelayLoadDLLs>Htmlayout.dll;%(DelayLoadDLLs)</DelayLoadDLLs>
+      <DelayLoadDLLs>sciter.dll;%(DelayLoadDLLs)</DelayLoadDLLs>
       <SubSystem>Windows</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -99,8 +95,8 @@
     <ClCompile Include="ConfigFileManager.cpp" />
     <ClCompile Include="DownloadWindow.cpp" />
     <ClCompile Include="ExtractCabProcessor.cpp" />
-    <ClCompile Include="HTMLayoutBehaviorWeblink.cpp" />
-    <ClCompile Include="HtmLayoutDll.cpp" />
+    <ClCompile Include="SciterBehaviorWeblink.cpp" />
+    <ClCompile Include="SciterDll.cpp" />
     <ClCompile Include="htmlInstaller.cpp" />
     <ClCompile Include="HtmlWindow.cpp" />
     <ClCompile Include="InstallerWindow.cpp" />
@@ -114,8 +110,8 @@
     <ClInclude Include="ConfigFileManager.h" />
     <ClInclude Include="DownloadWindow.h" />
     <ClInclude Include="ExtractCabProcessor.h" />
-    <ClInclude Include="HTMLayoutBehaviorWeblink.h" />
-    <ClInclude Include="HtmLayoutDll.h" />
+    <ClInclude Include="SciterBehaviorWeblink.h" />
+    <ClInclude Include="SciterDll.h" />
     <ClInclude Include="htmlInstaller.h" />
     <ClInclude Include="HtmlWidgets.h" />
     <ClInclude Include="HtmlWindow.h" />

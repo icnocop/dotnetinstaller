@@ -3,9 +3,9 @@
 class ExtractCabProcessor : public ExtractComponent
 {
 private:
-	htmlayout::dom::element * m_status;
+	sciter::dom::element * m_status;
 public:
-	ExtractCabProcessor(HMODULE h, const std::wstring& id, htmlayout::dom::element * status);
+	ExtractCabProcessor(HMODULE h, const std::wstring& id, sciter::dom::element * status);
 	void OnStatus(const std::wstring& status);
 };
 

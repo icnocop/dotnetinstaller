@@ -1,7 +1,7 @@
 #include "StdAfx.h"
 #include "SetControlValuesTask.h"
 
-SetControlValuesTask::SetControlValuesTask(const htmlayout::dom::element& root, HANDLE evt, std::wstring * perror)
+SetControlValuesTask::SetControlValuesTask(const sciter::dom::element& root, HANDLE evt, std::wstring * perror)
 : m_root(root)
 , m_event(evt)
 , m_perror(perror)
@@ -9,21 +9,21 @@ SetControlValuesTask::SetControlValuesTask(const htmlayout::dom::element& root, 
 
 }
 
-void SetControlValuesTask::exec(htmlayout::dom::element elt)
+void SetControlValuesTask::exec(sciter::dom::element elt)
 {
     if (elt.is_valid())
     {
-        const wchar_t * id = elt.get_attribute("id");
-        const wchar_t * type = elt.get_attribute("type");
-        const wchar_t * control_ptr = elt.get_attribute("control_ptr");
-        const wchar_t * disabled_a = elt.get_attribute("disabled");
-        bool disabled = (disabled_a != NULL && wcslen(disabled_a) > 0);
-        const wchar_t * has_value_disabled_a = elt.get_attribute("has_value_disabled");
-        bool has_value_disabled = (has_value_disabled_a != NULL && wcslen(has_value_disabled_a) > 0);
+        const sciter::string id = elt.get_attribute("id");
+        const sciter::string type = elt.get_attribute("type");
+        const sciter::string control_ptr = elt.get_attribute("control_ptr");
+        const sciter::string disabled_a = elt.get_attribute("disabled");
+        bool disabled = !disabled_a.empty();
+        const sciter::string has_value_disabled_a = elt.get_attribute("has_value_disabled");
+        bool has_value_disabled = !has_value_disabled_a.empty();
 
-        if (id != NULL && type != NULL && (! disabled || has_value_disabled))
+        if ((!id.empty()) && (!type.empty()) && (! disabled || has_value_disabled))
         {
-            if (0 == wcscmp(type, L"checkbox") && elt.get_attribute("license") != NULL)
+            if (0 == type.compare(L"checkbox") && (!elt.get_attribute("license").empty()))
             {
                 ControlLicense * p_license = reinterpret_cast<ControlLicense *>(DVLib::wstring2long(control_ptr, 16));
                 if (! InstallUILevelSetting::Instance->IsSilent())
@@ -38,10 +38,10 @@ void SetControlValuesTask::exec(htmlayout::dom::element elt)
                 LOG(L"--- Setting user-defined license value '" << id << L"'=" << value);
                 InstallerSession::Instance->AdditionalControlArgs[id] = value;
             }
-            else if (0 == wcscmp(type, L"checkbox"))
+            else if (0 == type.compare(L"checkbox"))
             {
                 std::wstring value;
-                if (control_ptr != NULL)
+                if (!control_ptr.empty())
                 {
                     ControlCheckBox * p_checkbox = reinterpret_cast<ControlCheckBox *>(DVLib::wstring2long(control_ptr, 16));
                     value = elt.get_state(STATE_CHECKED) ? p_checkbox->checked_value.GetValue() : p_checkbox->unchecked_value.GetValue();
@@ -54,27 +54,27 @@ void SetControlValuesTask::exec(htmlayout::dom::element elt)
                 LOG(L"--- Setting user-defined checkbox value '" << id << L"'=" << value);
                 InstallerSession::Instance->AdditionalControlArgs[id] = value;
             }
-            else if (0 == wcscmp(type, L"radio"))
+            else if (0 == type.compare(L"radio"))
             {
                 std::wstring value;
                 // Ignore this radio button if it's not checked.
                 // Only one "checked" element for each ID should exist
                 if (elt.get_state(STATE_CHECKED))
                 {
-                    const wchar_t * elt_value = elt.get_attribute("value");
-                    value = elt_value != NULL ? elt_value : L"1";
+                    const sciter::string elt_value = elt.get_attribute("value");
+                    value = (!elt_value.empty()) ? elt_value : L"1";
 
                     LOG(L"--- Setting user-defined radio button value '" << id << L"'=" << value);
                     InstallerSession::Instance->AdditionalControlArgs[id] = value;
                 }
             }
-            else if (0 == wcscmp(type, L"text"))
+            else if (0 == type.compare(L"text"))
             {
                 std::wstring value = elt.get_value().to_string();
                 LOG(L"--- Setting user-defined edit value '" << id << L"'=" << value);
                 InstallerSession::Instance->AdditionalControlArgs[id] = value;
             }
-            else if (0 == wcscmp(type, L"file-path") || 0 == wcscmp(type, L"folder-path"))
+            else if (0 == type.compare(L"file-path") || 0 == type.compare(L"folder-path"))
             {
                 std::wstring value = elt.get_value().to_string();
                 if (value.empty()) value = elt.get_attribute("novalue");

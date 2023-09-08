@@ -42,7 +42,7 @@ BEGIN
    IDC_HTMLINSTALLER   "HTMLINSTALLER"
 END
 
-HTMLAYOUTDLL DLL "..\\ThirdParty\\HTMLayoutSDK\\bin\\htmlayout.dll"
+SCITERDLL DLL "..\\ThirdParty\\sciter-js-sdk-5.0.2.21\\bin\\windows\\x32\\sciter.dll"
 
 RES_BANNER CUSTOM "html\\banner.bmp"
 
